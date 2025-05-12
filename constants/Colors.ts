@@ -20,7 +20,15 @@ export const Colors = {
     background: '#151718',
     tint: tintColorDark,
     icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    tabIconDefault: '#ffa6c4',
     tabIconSelected: tintColorDark,
   },
+  Therion: {
+    text: '#FFF',
+    background: '#FF5991',
+    tint: '#FF5991',
+    icon: '#687076',
+    backgroundopaco: '#ffa6c4',
+    tabIconSelected: '#0a7ea4',
+  }
 };
