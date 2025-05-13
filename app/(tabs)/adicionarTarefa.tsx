@@ -4,8 +4,10 @@ import { useColorScheme } from '@/hooks/useColorScheme.web';
 import { Colors} from '../../constants/Colors';
 import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity, Platform, Button } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-
+import DateTimePickerModal from 'react-native-modal-datetime-picker';  //npm install react-native-modal-datetime-picker
+import { auth } from '../firebase';
+import { db } from '../firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function HomeScreen() {
   //Define as variaveis do Titulo da tarefa
@@ -32,18 +34,41 @@ export default function HomeScreen() {
   const [mostrarPicker, setMostrarPicker] = useState(false);
 
   //Botao final 
-  const handleInserirTask = () => {
+  const handleInserirTask = async () => {
     if (!titulo.trim()) {
       alert('Por favor, digite o nome da tarefa.');
       return;
     }
-  
+    console.log("TESTE1")
+    //pt2 Firebase
+    const user = auth.currentUser;
+    if (!user) {
+      alert('Usuário não autenticado.');
+      return;
+    }
+    console.log("TESTE 2")
     const novaTask = {
       titulo,
       prioridade,
-      prazo: dataPrazo,
+      prazo: dataPrazo ? dataPrazo.toISOString() : null,
+      uid: user.uid,
+      criadaEm: new Date().toISOString(),
+      concluida: false
     };
-  
+    console.log("TESTE 3: ",  novaTask)
+    try {
+    await addDoc(collection(db, 'tarefas'), novaTask);
+    alert('Tarefa adicionada com sucesso!');    
+    // Limpa os campos
+    setTitulo('');
+    setPrioridade(null);
+    setDataPrazo(null);
+  } catch (error) {
+    console.error('Erro ao adicionar tarefa:', error);
+    alert('Erro ao salvar tarefa. Tente novamente.');
+  }
+    //pt2 Firebase
+
     console.log('Tarefa criada:', novaTask);
   
     // Aqui você pode adicionar lógica para salvar no estado, banco de dados, etc.
@@ -71,7 +96,7 @@ export default function HomeScreen() {
       {/* Campo de texto para adicionar tarefa*/}
       <TextInput 
         placeholder="Digite o nome da tarefa"
-        style={{marginTop:'auto', height: 40, borderColor: Colors.Therion.background, borderWidth: 1, marginBottom: 'auto', width: '100%', paddingLeft: 10 }}
+        style={{marginTop:'auto', height: 50, borderColor: Colors.Therion.background, borderWidth: 1, marginBottom: 'auto', width: '100%', paddingLeft: 10, borderRadius: 8 }}
         value={titulo}
         onChangeText ={setTitulo}
        > 
@@ -102,33 +127,51 @@ export default function HomeScreen() {
       ))}
     </View> 
     {/* Fim secção dos botões */}
-      {/* Campo de data para adicionar prazo da tarefa */}
-      <View style={{ marginTop: 'auto', width: '100%' }}>
-        <TouchableOpacity
-          onPress={() => setMostrarPicker(true)}
+      {/* Campo de data para adicionar prazo da tarefa install do datePicker npm install react-native-modal-datetime-picker */}
+
+    <View style={{ marginTop: 'auto', width: '100%' }}>
+      {Platform.OS === 'web' ? (
+        <input
+          type="date"
+          value={dataPrazo ? dataPrazo.toISOString().split('T')[0] : ''}
+          onChange={(e) => setDataPrazo(new Date(e.target.value))}
           style={{
             padding: 12,
-            backgroundColor: '#eee',
             borderRadius: 8,
+            border: '1px solid #ccc',
+            fontSize: 16,
+            width: '100%',
+            boxSizing: 'border-box',
           }}
-        >
-          <Text>
-            {dataPrazo ? dataPrazo.toLocaleDateString() : 'Selecionar prazo'}
-          </Text>
-        </TouchableOpacity>
-        {/*Mostrar datePicker (Elemento nativo, funciona apenas no celular*/}
-        {mostrarPicker && (
-          <DateTimePicker
-            value={dataPrazo || new Date()}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setMostrarPicker(Platform.OS === 'ios'); // fecha se Android
-              if (selectedDate) setDataPrazo(selectedDate);
+        />
+      ) : (
+        <>
+          <TouchableOpacity
+            onPress={() => setMostrarPicker(true)}
+            style={{
+              padding: 12,
+              backgroundColor: '#eee',
+              borderRadius: 8,
             }}
+          >
+            <Text>
+              {dataPrazo ? dataPrazo.toLocaleDateString() : 'Selecionar prazo'}
+            </Text>
+          </TouchableOpacity>
+
+          <DateTimePickerModal
+            isVisible={mostrarPicker}
+            mode="date"
+            date={dataPrazo || new Date()}
+            onConfirm={(date) => {
+              setDataPrazo(date);
+              setMostrarPicker(false);
+            }}
+            onCancel={() => setMostrarPicker(false)}
           />
-        )}
-      </View>
+        </>
+      )}
+    </View>
       <TouchableOpacity
         onPress={() => handleInserirTask()}
         style= {styles.botaoInserir}

@@ -10,7 +10,6 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 
 //PARTE 1 Primeiro Passo Codando
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
 
   return (
     <Tabs 
