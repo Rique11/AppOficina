@@ -69,7 +69,7 @@ useEffect(() => {  //PARTE 2
   };
 
   carregarTarefas();
-}, []);
+},);
   // Logica para Concluir tarefa 
   const alternarConclusao = async (id: string) => {
     //PARTE 1 

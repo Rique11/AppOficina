@@ -29,7 +29,7 @@ export default function RegisterScreen() {
       });
   
       Alert.alert('Sucesso', 'Registrado com sucesso!');
-      router.replace('/(login)/login');
+      router.replace('/(login)');
     } catch (error: any) {
       console.log('Erro no registro:', error);
       Alert.alert('Erro no registro', error.message || 'Tente novamente.');
@@ -48,7 +48,7 @@ export default function RegisterScreen() {
         <Text style={styles.botaoTexto}>Registrar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/(login)/login')}>
+      <TouchableOpacity onPress={() => router.push('/(login)')}>
         <Text style={styles.link}>Já tem conta? Faça login</Text>
       </TouchableOpacity>
     </View>
